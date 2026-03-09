@@ -18,6 +18,8 @@ const errorResponseSchema = z.object({
 })
 
 export async function healthRoutes(app: FastifyInstance) {
+  const modalidadesUrl = new URL('/api/pncp/v1/modalidades', env.PNCP_BASE_URL).toString()
+
   // Função auxiliar para auditar erros do PNCP
   const auditPncpError = (context: string, error: any) => {
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
@@ -51,7 +53,7 @@ export async function healthRoutes(app: FastifyInstance) {
       try {
         // Tentamos acessar um endpoint simples e leve do PNCP
         // Definimos um timeout de 5 segundos para não travar nossa API
-        await axios.get('https://pncp.gov.br/api/pncp/v1/modalidades', {
+        await axios.get(modalidadesUrl, {
           timeout: 5000,
         })
 

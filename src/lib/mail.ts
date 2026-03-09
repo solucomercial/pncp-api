@@ -10,6 +10,10 @@ const envSchema = z.object({
   SMTP_PASS: z.string(),
   SMTP_SECURE: z.enum(['true', 'false']).default('false').transform(val => val === 'true'),
   EMAIL_RECEIVER: z.string().email(),
+  PNCP_BASE_URL: z
+    .string()
+    .url()
+    .transform((url) => url.replace(/\/+$/, '')),
 })
 
 export const env = envSchema.parse(process.env)
