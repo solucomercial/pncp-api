@@ -22,12 +22,15 @@ export async function healthRoutes(app: FastifyInstance) {
   const auditPncpError = (context: string, error: any) => {
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
     const auditData = {
-      timestamp: new Date().toISOString(),
+      msg: 'Falha na auditoria do PNCP',
       context,
-      message: errorMessage,
+      error: errorMessage,
+      code: error?.code,
+      url: error?.config?.url,
       status: error.response?.status || 'Unknown',
+      timestamp: new Date().toISOString(),
     }
-    app.log.error(auditData, 'PNCP_AUDIT_LOG')
+    app.log.error(auditData)
     return auditData
   }
 
@@ -48,7 +51,7 @@ export async function healthRoutes(app: FastifyInstance) {
       try {
         // Tentamos acessar um endpoint simples e leve do PNCP
         // Definimos um timeout de 5 segundos para não travar nossa API
-        await axios.get('https://pncp.gov.br/api/consulta/v1/modalidades', {
+        await axios.get('https://pncp.gov.br/api/pncp/v1/modalidades', {
           timeout: 5000,
         })
 
@@ -68,11 +71,11 @@ export async function healthRoutes(app: FastifyInstance) {
           subject: '⚠️ ALERTA: PNCP Indisponível',
           text: `O sistema detectou que o PNCP não está respondendo em ${new Date().toLocaleString(
             'pt-BR',
-          )}.\n\nErro: ${details.message}`,
+          )}.\n\nErro: ${details.error}`,
           html: `
             <h1>🚨 PNCP Fora do Ar</h1>
             <p><strong>Erro detectado em:</strong> ${new Date().toLocaleString('pt-BR')}</p>
-            <p><strong>Detalhes:</strong> ${details.message}</p>
+            <p><strong>Detalhes:</strong> ${details.error}</p>
             <p style="color: #666; font-size: 12px; margin-top: 20px;">Este é um alerta automático do monitor de saúde da API.</p>
           `,
         })

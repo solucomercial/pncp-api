@@ -11,8 +11,23 @@ import { fastifyCors } from '@fastify/cors'
 import ScalarApiReference from '@scalar/fastify-api-reference'
 import { healthRoutes } from './routes/health'
 
+const isProduction = process.env.NODE_ENV === 'production'
 
-const app = fastify().withTypeProvider<ZodTypeProvider>()
+const app = fastify({
+  ignoreTrailingSlash: true,
+  logger: isProduction
+    ? true
+    : {
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          translateTime: 'HH:MM:ss Z',
+          ignore: 'pid,hostname',
+          colorize: true,
+        },
+      },
+    },
+}).withTypeProvider<ZodTypeProvider>()
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
@@ -38,11 +53,10 @@ app.register(ScalarApiReference, {
   routePrefix: '/docs',
 })
 
-// Registo de rotas
 app.register(healthRoutes)
 
 app.listen({ port: 3333, host: '0.0.0.0'}).then(() => {
-  console.log('HTTP server running on http://localhost:3333')
-  console.log('Docs available at http://localhost:3333/docs')
-  console.log('Healthcheck available at http://localhost:3333/healthcheck')
+  app.log.info('HTTP server running on http://localhost:3333')
+  app.log.info('Docs available at http://localhost:3333/docs')
+  app.log.info('Healthcheck available at http://localhost:3333/healthcheck')
 })
