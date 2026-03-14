@@ -10,6 +10,7 @@ import { fastifySwagger } from '@fastify/swagger'
 import { fastifyCors } from '@fastify/cors'
 import ScalarApiReference from '@scalar/fastify-api-reference'
 import { healthRoutes } from './routes/health'
+import { oportunidadesRoutes } from './routes/oportunidades'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
@@ -54,6 +55,7 @@ app.register(ScalarApiReference, {
 })
 
 app.register(healthRoutes)
+app.register(oportunidadesRoutes)
 
 app.listen({ port: 3333, host: '0.0.0.0'}).then(() => {
   app.log.info('HTTP server running on http://localhost:3333')
